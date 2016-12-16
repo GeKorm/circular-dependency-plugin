@@ -4,6 +4,7 @@ var extend = require('util')._extend;
 function CircularDependencyPlugin(options) {
   this.options = extend({
     exclude: new RegExp('$^'),
+    checkChain: false,
     failOnError: false
   }, options);
 }
@@ -49,6 +50,10 @@ CircularDependencyPlugin.prototype.apply = function(compiler) {
       if (module.resource === undefined || plugin.options.exclude.test(module.resource)) { return; }
       var cyclePath = isCyclic(module, module, {});
       if (cyclePath) {
+        if (plugin.options.checkChain) {
+          var fullCheck = cyclePath.join();
+          if (plugin.options.exclude.test(fullCheck)) { return; }
+        }
         var relativePathToModule = path.relative(process.cwd(), module.resource);
         var error = new Error('Circular dependency detected:\r\n'.concat(cyclePath.join(' -> ')));
         if (plugin.options.failOnError) {

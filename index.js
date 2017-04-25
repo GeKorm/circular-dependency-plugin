@@ -51,8 +51,9 @@ CircularDependencyPlugin.prototype.apply = function(compiler) {
       var cyclePath = isCyclic(module, module, {});
       if (cyclePath) {
         if (plugin.options.checkChain) {
-          var fullCheck = cyclePath.join();
-          if (plugin.options.exclude.test(fullCheck)) { return; }
+          for (var i = 0; i < cyclePath.length; i++) {
+            if (plugin.options.checkChain.test(cyclePath[i])) { return; }
+          }
         }
         var relativePathToModule = path.relative(process.cwd(), module.resource);
         var error = new Error('Circular dependency detected:\r\n'.concat(cyclePath.join(' -> ')));
